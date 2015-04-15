@@ -1,0 +1,13 @@
+{
+  "name": "the-pillar",
+  "version": "1.0.0",
+  "description": "You are Blokk, save the onion!",
+  "author": {
+    "name": "Hayden Stainsby",
+    "email": "hds@caffeineconcepts.com"
+  },
+  "repository": {},
+  "devDependencies": {
+    "jshint": "^2.7.0"
+  }
+}
