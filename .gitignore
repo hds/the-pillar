@@ -1,0 +1,10 @@
+
+
+# Cocos2d-js
+frameworks/
+publish/
+runtime/
+tools/
+
+# Node.js
+node_modules
