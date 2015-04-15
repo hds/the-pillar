@@ -6,7 +6,10 @@
     "name": "Hayden Stainsby",
     "email": "hds@caffeineconcepts.com"
   },
-  "repository": {},
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:hds/the-pillar.git"
+  },
   "devDependencies": {
     "jshint": "^2.7.0"
   }
