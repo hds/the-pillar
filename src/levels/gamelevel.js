@@ -1,6 +1,9 @@
 'use strict';
 
 pillar.LevelLayer = cc.Layer.extend({
+    // Level physics
+    _gravity: -1000,
+
     _hero: null,
     _pillar: null,
     _ground: 64,
@@ -65,7 +68,7 @@ pillar.LevelLayer = cc.Layer.extend({
             onKeyPressed:  function(keyCode, event)  {
                 var layer = event.getCurrentTarget();
                 layer.setControlState(keyCode, true);
-                cc.log("Key " + keyCode.toString() + " was pressed!");
+                // cc.log("Key " + keyCode.toString() + " was pressed!");
             },
             onKeyReleased: function(keyCode, event){
                 var layer = event.getCurrentTarget();
@@ -78,16 +81,37 @@ pillar.LevelLayer = cc.Layer.extend({
     update: function(delta)  {
         this._pillar.update(delta);
 
-        var bpos = this._hero.getPosition();
-        if (this._controls.right)  {
-            bpos.x += 500 * delta;
-        }
-        else if (this._controls.left)  {
-            bpos.x -= 500 * delta;
-        }
-        this._hero.setPosition(bpos);
+        this.updateHero(delta);
+
+        // var bpos = this._hero.getPosition();
+        // if (this._controls.right)  {
+        //     bpos.x += 500 * delta;
+        // }
+        // else if (this._controls.left)  {
+        //     bpos.x -= 500 * delta;
+        // }
+        // this._hero.setPosition(bpos);
 
         // cc.log(this._controls);
+    },
+
+    updateHero: function(delta)  {
+        if (this._controls.jump === true && this._hero.isJumping() === false)  {
+            this._hero.jump();
+            cc.log('jump!');
+        }
+
+        if (this._controls.right === true)  {
+            this._hero.runRight();
+        }
+        else if (this._controls.left === true)  {
+            this._hero.runLeft();
+        }
+        else  {
+            this._hero.stand();
+        }
+
+        this._hero.update(delta, this._gravity, this._ground);
     },
 
     setControlState: function(e, state)  {
