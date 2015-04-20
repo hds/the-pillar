@@ -9,6 +9,8 @@ pillar.LevelLayer = cc.Layer.extend({
     _ground: 64,
     _controls: {'right': false, 'left': false, 'jump': false, 'attack': false},
 
+    _drawNode: null,
+
     ctor: function()  {
         this._super();
         this.init();
@@ -52,6 +54,8 @@ pillar.LevelLayer = cc.Layer.extend({
 
         this._pillar.setPosition(cc.p(cc.winSize.width/2.0, this._ground + this._pillar.getHitbox().height/2.0));
         this.addChild(this._pillar.getSprite(), 20);
+
+        this.addChild(this._pillar.getBeam(), 5);
     },
 
     initHero: function()  {
@@ -82,6 +86,7 @@ pillar.LevelLayer = cc.Layer.extend({
         this._pillar.update(delta);
 
         this.updateHero(delta);
+
 
         // var bpos = this._hero.getPosition();
         // if (this._controls.right)  {
