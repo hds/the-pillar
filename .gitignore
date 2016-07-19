@@ -8,3 +8,6 @@ tools/
 
 # Node.js
 node_modules
+
+# Ternjs
+.tern-project

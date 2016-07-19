@@ -1,5 +1,11 @@
 'use strict';
 
+var BeamState = {
+    Idle: 'Idle',
+    CountDown: 'CountDown',
+    Jumping: 'Jumping'
+};
+
 pillar.Pillar = cc.Class.extend({
     _sprite: null,
     _light: null,
@@ -9,6 +15,7 @@ pillar.Pillar = cc.Class.extend({
     _countdown: 0.5,
     _colour: 0,
 
+    _state: BeamState.CountDown,
     _beam: null,
 
     ctor: function()  {
@@ -24,7 +31,7 @@ pillar.Pillar = cc.Class.extend({
         this._beam = new cc.DrawNode();
         this._beam._radius = 0;
         this._beam._direction = 1;
-        this._beam._active = false;
+        this._beam._state = BeamState.CountDown;
     },
 
     update: function(delta)  {
@@ -37,9 +44,9 @@ pillar.Pillar = cc.Class.extend({
             if (this._countdownStart > 0.2)  {
                 this._countdownStart -= 0.1;
             }
-            else if  (this._beam._active === false)  {
-                this._beam._active = true;
-                cc.log('Activate beam!');
+            else if  (this._beam._state === BeamState.CountDown)  {
+                this._beam._state = BeamState.Jumping;
+                cc.log('Activate Pillar!');
             }
         }
 
@@ -47,17 +54,16 @@ pillar.Pillar = cc.Class.extend({
     },
 
     updateBeam: function(delta)  {
-        if (this._beam._active === true)  {
+        if (this._beam._state === BeamState.Jumping)  {
             this._beam._radius += this._beam._direction * 1000 * delta;
             if (this._beam._radius > cc.winSize.width)
                 this._beam._direction = -1;
             else if (this._beam._radius < 0)  {
                 this._beam._radius = 0;
-                this._beam._active = false;
+                this._beam._state = BeamState.Idle;
             }
 
             this._beam.clear();
-            cc.log('draw with radius: ' + this._beam._radius);
             this._beam.drawDot(this._pos, this._beam._radius, cc.color('#ffffff'));
         }
     },
