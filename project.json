@@ -15,6 +15,7 @@
         "src/app.js",
         "src/levels/gamelevel.js",
         "src/actors/hero.js",
-        "src/actors/pillar.js"
+        "src/actors/pillar.js",
+        "src/levels/terrain.js"
     ]
 }

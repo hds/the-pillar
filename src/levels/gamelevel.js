@@ -10,55 +10,6 @@ var ZIndices = {
     Pillar: 20
 };
 
-pillar.TerrainUnit = cc.Class.extend({
-    _sprite: null,
-    _size: 0,
-    _pos: cc.p(0, 0),
-    _hitbox: cc.rect(0, 0, 0, 0),
-
-    ctor: function(size, pos)  {
-        this.init(size, pos);
-    },
-
-    init: function(size, pos)  {
-        this._size = size;
-        this._sprite = new cc.LayerColor(cc.color('#EDB624'),
-                                         this._size,
-                                         this._size);
-        // this._sprite.setAnchorPoint(0, 0);
-        this._pos = cc.p(pos.x * this._size, pos.y * this._size);
-
-        this.updateSprite();
-    },
-
-    updateSprite: function()  {
-        if (this._sprite)  {
-            this._sprite.setPosition(cc.p(this._pos.x, this._pos.y));
-        }
-    },
-
-    getSprite: function() {
-        return this._sprite;
-    },
-
-    getPosition: function() {
-        return this._pos;
-    },
-
-    getHitbox: function()  {
-        var hitbox = cc.rect(this._pos.x,
-                             this._pos.y,
-                             this._size,
-                             this._size);
-        return hitbox;
-    }
-
-});
-
-pillar.TerrainUnit.Types = {
-
-};
-
 pillar.LevelLayer = cc.Layer.extend({
     // Level physics
     _gravity: -1000,
@@ -66,6 +17,7 @@ pillar.LevelLayer = cc.Layer.extend({
     _hero: null,
     _pillar: null,
     _ground: 64,
+    _worldSize: cc.size(0, 0),
     _terrain: [],
     _controls: {'right': false, 'left': false, 'jump': false, 'attack': false},
 
@@ -87,7 +39,7 @@ pillar.LevelLayer = cc.Layer.extend({
         this.initWorld();
 
         // Initialise the pillar.
-        this.initPillar();
+        // this.initPillar();
 
         // Initialise Blokk.
         this.initHero();
@@ -98,25 +50,62 @@ pillar.LevelLayer = cc.Layer.extend({
     },
 
     initWorld: function()  {
-        var visibleSize = cc.winSize;
+        var terrainWidth = 8*4;
+        var terrainHeight = 12;
+        var terrainUnitSize = 64;
+        var terrainMap =
+            "********************************" +
+            "*                              *" +
+            "*                              *" +
+            "*                              *" +
+            "*             **********    ****" +
+            "*         p                   **" +
+            "*       ****                   *" +
+            "*                              *" +
+            "*      *      **               =" +
+            "*                   ===      ===" +
+            "***        **      =====    ====" +
+            "================================";
 
-        cc.log('Game world size:', visibleSize);
+        // Sanity check.
+        if (terrainMap.length % terrainWidth !== 0) {
+            cc.error("Invalid map data: Terrain map size doesn't match width.");
+            return;
+        }
+        else if (terrainMap.length / terrainWidth !== terrainHeight) {
+            cc.error("Invalid map data: Terrain map size doesn't match height.");
+            return;
+        }
 
-        var background = new cc.LayerColor(cc.color('#B0ECF7'), visibleSize.width*10, visibleSize.height);
+        // Set the size of the world and the background.
+        this._worldSize = cc.size(terrainWidth * terrainUnitSize,
+                                  terrainHeight * terrainUnitSize);
+        var background = new cc.LayerColor(cc.color('#B0ECF7'),
+                                           this._worldSize.width,
+                                           this._worldSize.height);
         this.addChild(background, ZIndices.Background);
 
-        var ground = new cc.LayerColor(cc.color('#4BC9C0'), visibleSize.width*10, this._ground);
-        this.addChild(ground, ZIndices.Ground);
-        console.debug('Ground:', ground);
-
-        this.initTerrain();
-    },
-
-    initTerrain: function() {
-        this._terrain.push(new pillar.TerrainUnit(64, cc.p(1, 1)));
-        this._terrain.push(new pillar.TerrainUnit(64, cc.p(2, 1)));
-        this._terrain.push(new pillar.TerrainUnit(64, cc.p(5, 3)));
-        this._terrain.push(new pillar.TerrainUnit(64, cc.p(6, 3)));
+        // Create objects from map.
+        for (var idx = 0; idx < terrainWidth*terrainHeight; idx++) {
+            var pos = cc.p(idx % terrainWidth,
+                           terrainHeight - 1 - Math.floor(idx / terrainWidth));
+            var terrainType = terrainMap.charAt(idx);
+            if (terrainType === 'p') {
+                if (this._pillar !== null) {
+                    console.error("Multiple pillars cannot be!");
+                    return;
+                }
+                this._pillar = new pillar.Pillar();
+                this._pillar.setPosition(cc.p((pos.x + 0.5) * terrainUnitSize,
+                                              (pos.y * terrainUnitSize) + this._pillar.getHitbox().height/2.0));
+                this.addChild(this._pillar.getSprite(), ZIndices.Pillar);
+                this.addChild(this._pillar.getBeam(), ZIndices.PillarBeam);
+            }
+            else if (terrainType !== ' ') {
+                var terrainUnit = new pillar.TerrainUnit(terrainUnitSize, pos, terrainType);
+                this._terrain.push(terrainUnit);
+            }
+        }
 
         this._terrain.forEach((terrainUnit) => {
             this.addChild(terrainUnit.getSprite(), ZIndices.Terrain);
@@ -128,14 +117,14 @@ pillar.LevelLayer = cc.Layer.extend({
 
         this._pillar.setPosition(cc.p(cc.winSize.width/2.0, this._ground + this._pillar.getHitbox().height/2.0));
         this.addChild(this._pillar.getSprite(), ZIndices.Pillar);
-
         this.addChild(this._pillar.getBeam(), ZIndices.PillarBeam);
     },
 
     initHero: function()  {
         this._hero = new pillar.Hero();
 
-        this._hero.setPosition(cc.p(300, this._ground + this._hero.getHitbox().height/2.0));
+        var pillarPos = this._pillar.getPosition();
+        this._hero.setPosition(cc.p(pillarPos));
 
         this.addChild(this._hero.getSprite(), ZIndices.Hero);
     },
@@ -198,13 +187,25 @@ pillar.LevelLayer = cc.Layer.extend({
         var pos = this.getPosition();
         var visibleSize = cc.winSize;
 
+        pos = cc.p((visibleSize.width/2) - heroPos.x,
+                   (visibleSize.height/2) - heroPos.y);
         pos.x = (visibleSize.width/2) - heroPos.x;
+
         if (pos.x > 0) {
             pos.x = 0;
         }
-        // else if (pos.x < (visibleSize.width*3) - (visibleSize.width/2)) {
-        //     pos.x = (visibleSize.width*3) - (visibleSize.width/2);
-        // }
+        else if (pos.x < -(this._worldSize.width - visibleSize.width)) {
+            pos.x = -(this._worldSize.width - visibleSize.width);
+        }
+
+        if (pos.y > 0) {
+            pos.y = 0;
+        }
+        else if (pos.y < -(this._worldSize.height - visibleSize.height)) {
+            pos.y = -(this._worldSize.height - visibleSize.height);
+        }
+
+
         this.setPosition(pos);
 
     },
