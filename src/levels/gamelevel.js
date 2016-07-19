@@ -16,7 +16,6 @@ pillar.LevelLayer = cc.Layer.extend({
 
     _hero: null,
     _pillar: null,
-    _ground: 64,
     _worldSize: cc.size(0, 0),
     _terrain: [],
     _controls: {'right': false, 'left': false, 'jump': false, 'attack': false},
@@ -38,9 +37,6 @@ pillar.LevelLayer = cc.Layer.extend({
         // Initialise the world
         this.initWorld();
 
-        // Initialise the pillar.
-        // this.initPillar();
-
         // Initialise Blokk.
         this.initHero();
 
@@ -50,22 +46,52 @@ pillar.LevelLayer = cc.Layer.extend({
     },
 
     initWorld: function()  {
-        var terrainWidth = 8*4;
-        var terrainHeight = 12;
-        var terrainUnitSize = 64;
-        var terrainMap =
-            "********************************" +
-            "*                              *" +
-            "*                              *" +
-            "*                              *" +
-            "*             **********    ****" +
-            "*         p                   **" +
-            "*       ****                   *" +
-            "*                              *" +
-            "*      *      **               =" +
-            "*                   ===      ===" +
-            "***        **      =====    ====" +
-            "================================";
+        var level1 = {
+            size: {
+                width: 32,
+                height: 12
+            },
+            unitSize: 64,
+            map:
+                "********************************" +
+                "*                              *" +
+                "*                              *" +
+                "*                              *" +
+                "*             **********    ****" +
+                "*         p                   **" +
+                "*       ****                   *" +
+                "*                              *" +
+                "*      *      **               =" +
+                "*                   ===      ===" +
+                "***        **      =====    ====" +
+                "================================"
+        };
+        var level2 = {
+            size: {
+                width: 32,
+                height: 12
+            },
+            unitSize: 32,
+            map:
+                "********************************" +
+                "*                              *" +
+                "*                              *" +
+                "*                              *" +
+                "*             **********    ****" +
+                "*         p                   **" +
+                "*       ****                   *" +
+                "*                              *" +
+                "*      *      **               =" +
+                "*                   ===      ===" +
+                "***        **      =====    ====" +
+                "================================"
+        };
+        var level = level1;
+        var terrainWidth = level.size.width;
+        var terrainHeight = level.size.height;
+        var terrainUnitSize = level.unitSize;
+        var terrainMap = level.map;
+
 
         // Sanity check.
         if (terrainMap.length % terrainWidth !== 0) {
@@ -110,14 +136,6 @@ pillar.LevelLayer = cc.Layer.extend({
         this._terrain.forEach((terrainUnit) => {
             this.addChild(terrainUnit.getSprite(), ZIndices.Terrain);
         });
-    },
-
-    initPillar: function()  {
-        this._pillar = new pillar.Pillar();
-
-        this._pillar.setPosition(cc.p(cc.winSize.width/2.0, this._ground + this._pillar.getHitbox().height/2.0));
-        this.addChild(this._pillar.getSprite(), ZIndices.Pillar);
-        this.addChild(this._pillar.getBeam(), ZIndices.PillarBeam);
     },
 
     initHero: function()  {
@@ -173,14 +191,8 @@ pillar.LevelLayer = cc.Layer.extend({
             this._hero.stand();
         }
 
-        this._hero.update(delta, this._gravity, this._ground, this._terrain);
+        this._hero.update(delta, this._gravity, this._terrain);
     },
-
-    // updateCollisions: function(delta) {
-    //     this._terrain.forEach((terrainUnit) => {
-    //         this._hero.interactObstacles(terrainUnit);
-    //     });
-    // },
 
     updateCamera: function(delta) {
         var heroPos = this._hero.getPosition();
@@ -191,14 +203,14 @@ pillar.LevelLayer = cc.Layer.extend({
                    (visibleSize.height/2) - heroPos.y);
         pos.x = (visibleSize.width/2) - heroPos.x;
 
-        if (pos.x > 0) {
+        if (pos.x >= 0) {
             pos.x = 0;
         }
         else if (pos.x < -(this._worldSize.width - visibleSize.width)) {
             pos.x = -(this._worldSize.width - visibleSize.width);
         }
 
-        if (pos.y > 0) {
+        if (pos.y >= 0) {
             pos.y = 0;
         }
         else if (pos.y < -(this._worldSize.height - visibleSize.height)) {

@@ -148,7 +148,7 @@ pillar.Hero = cc.Class.extend({
         this._direction = 0;
     },
 
-    update: function(delta, gravity, ground, terrain)  {
+    update: function(delta, gravity, terrain)  {
         var pos = this.getPosition();
 
 
@@ -160,11 +160,6 @@ pillar.Hero = cc.Class.extend({
             }
             this._speed.y += gravity * delta;
             pos.y += this._speed.y * delta;
-
-            if (pos.y <= ground + this.getHalfHeight())  {
-                pos.y = ground + this.getHalfHeight();
-                this.land();
-            }
         }
         else if (this._obstacles.length === 0) {
             this.fall();
@@ -174,16 +169,10 @@ pillar.Hero = cc.Class.extend({
         if (this._direction === -1)  {
             this._speed.x = Math.max(this._speed.x - (this._acceleration * delta),
                                      -this._runSpeed);
-            // this._speed.x -= this._acceleration * delta;
-            // if (this._speed.x < -this._runSpeed)
-            //     this._speed.x = -this._runSpeed;
         }
         else if (this._direction === 1)  {
             this._speed.x = Math.min(this._speed.x + (this._acceleration * delta),
                                      this._runSpeed);
-            // this._speed.x += this._acceleration * delta;
-            // if (this._speed.x > this._runSpeed)
-            //     this._speed.x = this._runSpeed;
 
         }
         else if (this._direction === 0)  {
